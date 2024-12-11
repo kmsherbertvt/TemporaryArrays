@@ -12,6 +12,18 @@ Subsequent calls with the same signature
     (e.g. from the same line of code repeated in a loop)
     will be allocated the *same* array, without any extra allocations.
 
+```
+using TemporaryArrays
+a1 = @temparray(Float64, (3,4), :same)
+a2 = @temparray(Float64, (3,4), :same)
+a3 = @temparray(Float64, (3,4), :different)
+
+@assert eltype(a1) == Float64
+@assert size(a1) == (3,4)
+@assert a1 === a2
+@assert a1 !== a3
+```
+
 The point is to be able to use "work variables"
     that persist and get re-used throughout a computation,
     but in a julianic and readable way.

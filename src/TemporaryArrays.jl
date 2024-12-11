@@ -26,33 +26,37 @@ module TemporaryArrays
         i.e. never return them in a function call.
 
     # Parameters
-    - F::Type{<:Number} - a concrete number type (e.g. `Float64`)
-    - shape::Tuple{Int} - the shape of the array
-    - index::Any - a unique identifier, to prevent unwanted collisions
+    - `F::Type{<:Number}` - a concrete number type (e.g. `Float64`)
+    - `size::Tuple{Int}` - the size of the array
+    - `index::Any...` - unique identifiers to prevent unwanted collisions
 
-        @doctest```
-        a1 = @temparray(Float64, (3,4), :same)
-        a2 = @temparray(Float64, (3,4), :same)
-        a3 = @temparray(Float64, (3,4), :different)
+    ```jldoctest; output = false
+    using TemporaryArrays
+    a1 = @temparray(Float64, (3,4), :same)
+    a2 = @temparray(Float64, (3,4), :same)
+    a3 = @temparray(Float64, (3,4), :different)
 
-        @assert eltype(a1) == Float64
-        @assert shape(a1) == (3,4)
-        @assert a1 === a2
-        @assert a1 !== a3
-        ```
+    @assert eltype(a1) == Float64
+    @assert size(a1) == (3,4)
+    @assert a1 === a2
+    @assert a1 !== a3
+
+    # output
+
+    ```
 
     """
-    macro temparray(F, shape, index...)
+    macro temparray(F, size, index...)
         modulename = Symbol(__module__)
         return Expr(:call, :_allocate,
             esc(:($F)),
-            esc(:($shape)),
+            esc(:($size)),
             :($(QuoteNode(modulename)), $(index...)),
         )
     end
 
-    @memoize Dict function _allocate(::Type{<:F}, shape, index) where {F}
-        return Array{F}(undef, shape)
+    @memoize Dict function _allocate(::Type{<:F}, size, index) where {F}
+        return Array{F}(undef, size)
     end
 
 end
